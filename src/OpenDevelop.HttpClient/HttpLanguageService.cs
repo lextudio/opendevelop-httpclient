@@ -92,8 +92,56 @@ namespace OpenDevelop.HttpClient
             return Task.FromResult<IReadOnlyList<LanguageDiagnostic>>(diagnostics);
         }
 
-        public Task<IReadOnlyList<NavigationTarget>> GoToDefinitionAsync(DocumentId documentId, int offset, CancellationToken cancellationToken) =>
-            Task.FromResult<IReadOnlyList<NavigationTarget>>(Array.Empty<NavigationTarget>());
+        public Task<IReadOnlyList<NavigationTarget>> GoToDefinitionAsync(DocumentId documentId, int offset, CancellationToken cancellationToken)
+        {
+            var targets = new List<NavigationTarget>();
+            try
+            {
+                var text = System.IO.File.Exists(documentId.FileName)
+                    ? System.IO.File.ReadAllText(documentId.FileName)
+                    : "";
+                if (string.IsNullOrEmpty(text)) return Task.FromResult<IReadOnlyList<NavigationTarget>>(targets);
+
+                // Find the word at offset
+                var varName = GetVariableAtOffset(text, offset);
+                if (varName is null) return Task.FromResult<IReadOnlyList<NavigationTarget>>(targets);
+
+                // Search for variable definition: @varName =
+                var lines = text.Split('\n');
+                int lineNum = 0;
+                int colNum = 0;
+                foreach (var line in lines)
+                {
+                    var trimmed = line.TrimStart();
+                    if (trimmed.StartsWith("@") && trimmed.Contains("="))
+                    {
+                        var parts = trimmed.Substring(1).Split(new[] { '=' }, 2);
+                        if (parts.Length >= 1 && parts[0].Trim().Equals(varName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Found definition
+                            var col = line.IndexOf('@');
+                            targets.Add(new NavigationTarget(documentId.FileName, new TextPosition(lineNum + 1, col + 2)));
+                            break;
+                        }
+                    }
+
+                    // Also check for named request: # @name requestName
+                    if (trimmed.Contains("@name") && trimmed.Contains(varName))
+                    {
+                        var idx = trimmed.IndexOf("@name");
+                        var rest = trimmed.Substring(idx + 5).Trim();
+                        if (rest.StartsWith(varName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            targets.Add(new NavigationTarget(documentId.FileName, new TextPosition(lineNum + 1, 1)));
+                            break;
+                        }
+                    }
+                    lineNum++;
+                }
+            }
+            catch { }
+            return Task.FromResult<IReadOnlyList<NavigationTarget>>(targets);
+        }
 
         public Task<SymbolReferencesResult?> FindReferencesAsync(DocumentId documentId, int offset, CancellationToken cancellationToken) =>
             Task.FromResult<SymbolReferencesResult?>(null);
