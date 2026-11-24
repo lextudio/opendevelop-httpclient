@@ -381,19 +381,38 @@ namespace OpenDevelop.HttpClient
                 return HttpBindingResult<object?>.Success(new Random().Next(0, 1000).ToString());
             }
 
-            if (name.StartsWith("timestamp"))
+            if (name.StartsWith("uuid"))
             {
-                return HttpBindingResult<object?>.Success(DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString());
+                return HttpBindingResult<object?>.Success(Guid.NewGuid().ToString());
             }
 
             if (name.StartsWith("datetime") || name.StartsWith("localdatetime"))
             {
-                return HttpBindingResult<object?>.Success(DateTimeOffset.UtcNow.ToString("o"));
+                var isLocal = name.StartsWith("localdatetime");
+                var rest = name.Replace("localdatetime", "").Replace("datetime", "").Trim();
+                // Parse format: iso8601, rfc1123, or custom format in quotes
+                var dto = isLocal ? DateTimeOffset.Now : DateTimeOffset.UtcNow;
+                if (string.IsNullOrEmpty(rest) || rest == "iso8601")
+                    return HttpBindingResult<object?>.Success(dto.ToString("o"));
+                if (rest == "rfc1123")
+                    return HttpBindingResult<object?>.Success(dto.ToString("R"));
+                // Custom format in quotes
+                if (rest.StartsWith("\"") && rest.EndsWith("\""))
+                {
+                    var format = rest.Trim('"');
+                    return HttpBindingResult<object?>.Success(dto.ToString(format));
+                }
+                if (rest.StartsWith("'") && rest.EndsWith("'"))
+                {
+                    var format = rest.Trim('\'');
+                    return HttpBindingResult<object?>.Success(dto.ToString(format));
+                }
+                return HttpBindingResult<object?>.Success(dto.ToString("o"));
             }
 
-            if (name.StartsWith("guid"))
+            if (name.StartsWith("timestamp"))
             {
-                return HttpBindingResult<object?>.Success(Guid.NewGuid().ToString());
+                return HttpBindingResult<object?>.Success(DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString());
             }
 
             if (name.StartsWith("processenv"))
@@ -406,6 +425,11 @@ namespace OpenDevelop.HttpClient
                         return HttpBindingResult<object?>.Success(value);
                 }
                 return HttpBindingResult<object?>.Failure(Array.Empty<Diagnostic>());
+            }
+
+            if (name.StartsWith("guid"))
+            {
+                return HttpBindingResult<object?>.Success(Guid.NewGuid().ToString());
             }
 
             switch (name)
