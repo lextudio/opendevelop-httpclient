@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <_ProGpuWpfManagedTransportRuntimeTfm>net10.0</_ProGpuWpfManagedTransportRuntimeTfm>
+    <_ProGpuWpfCanonicalWinFormsRuntimeTfm>net10.0</_ProGpuWpfCanonicalWinFormsRuntimeTfm>
+    <_ProGpuWpfPortableWinFormsCompatRuntimeTfm>net10.0</_ProGpuWpfPortableWinFormsCompatRuntimeTfm>
+  </PropertyGroup>
+</Project>

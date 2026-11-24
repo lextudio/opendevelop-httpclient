@@ -1,0 +1,52 @@
+<AddIn name        = "HTTP Client"
+       author      = "LeXtudio"
+       copyright   = "prj:///doc/copyright.txt"
+       description = "HTTP client support for .http and .rest files"
+       addInManagerHidden = "preinstalled">
+
+	<Manifest>
+		<Identity name = "OpenDevelop.HttpClient"/>
+	</Manifest>
+
+	<Runtime>
+		<Import assembly = ":ICSharpCode.SharpDevelop"/>
+		<Import assembly = "OpenDevelop.HttpClient.dll"/>
+	</Runtime>
+
+	<!-- Syntax highlighting for .http and .rest files -->
+	<Path name = "/SharpDevelop/ViewContent/AvalonEdit/SyntaxModes">
+		<SyntaxMode id         = "HTTP Syntax Mode"
+		            name       = "HTTP"
+		            extensions = ".http;.rest"
+		            resource   = "OpenDevelop.HttpClient.Resources.Http.xshd" />
+	</Path>
+
+	<!-- File filter for Open dialog -->
+	<Path name = "/SharpDevelop/Workbench/FileFilter">
+		<FileFilter id = "Http"
+		            insertbefore="AllFiles"
+		            name = "HTTP Request Files (*.http;*.rest)"
+		            extensions = "*.http;*.rest"
+		            mimeType = "text/plain"/>
+	</Path>
+
+	<!-- Autostart: register language service and commands -->
+	<Path name = "/SharpDevelop/Autostart">
+		<Class id    = "HttpClientRegisterServices"
+		       class = "OpenDevelop.HttpClient.RegisterServicesCommand"/>
+	</Path>
+
+	<!-- Main menu: HTTP commands -->
+	<Path name = "/SharpDevelop/Workbench/MainMenu/Tools">
+		<MenuItem id    = "SendHttpRequest"
+		          label = "Send HTTP Request"
+		          class = "OpenDevelop.HttpClient.SendRequestCommand"/>
+	</Path>
+
+	<!-- Text editor context menu -->
+	<Path name = "/SharpDevelop/ViewContent/TextEditor/ContextMenu">
+		<MenuItem id    = "SendHttpRequest"
+		          label = "Send Request"
+		          class = "OpenDevelop.HttpClient.SendRequestCommand"/>
+	</Path>
+</AddIn>

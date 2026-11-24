@@ -1,0 +1,30 @@
+<Project Sdk="LibreWPF.Sdk">
+  <PropertyGroup>
+    <OpenDevelopAddin>true</OpenDevelopAddin>
+    <OpenDevelopAddinKind>InProcess</OpenDevelopAddinKind>
+    <TargetFramework>net11.0-windows</TargetFramework>
+    <RootNamespace>OpenDevelop.HttpClient</RootNamespace>
+    <AssemblyName>OpenDevelop.HttpClient</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+    <UseWPF>true</UseWPF>
+    <OutputPath>$(OpenDevelopRoot)AddIns\Misc\HttpClient\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <!-- SDK auto-includes all .cs files in the project directory; no explicit Compile needed. -->
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Http.xshd" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="OpenDevelop.HttpClient.addin" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(OpenDevelopRoot)src\Main\Base\Project\ICSharpCode.SharpDevelop.csproj" Private="false" />
+    <ProjectReference Include="$(OpenDevelopRoot)src\Main\Core\Project\ICSharpCode.Core.csproj" Private="false" />
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="5.6.0" />
+  </ItemGroup>
+</Project>

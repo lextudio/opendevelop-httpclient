@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SyntaxDefinition name="HTTP" extensions=".http;.rest" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <Color name="Method" foreground="Blue" fontWeight="bold" />
+  <Color name="Url" foreground="DarkGreen" />
+  <Color name="HeaderName" foreground="DarkRed" />
+  <Color name="HeaderValue" foreground="Black" />
+  <Color name="Comment" foreground="Green" />
+  <Color name="Variable" foreground="Purple" fontWeight="bold" />
+  <Color name="Separator" foreground="Gray" fontWeight="bold" />
+  <Color name="Keyword" foreground="Blue" />
+
+  <RuleSet>
+    <!-- Comments -->
+    <Span color="Comment" begin="#" />
+    <Span color="Comment" begin="//" />
+
+    <!-- Variables {{...}} -->
+    <Span color="Variable" begin="\{\{" end="\}\}" />
+
+    <!-- Request separator ### -->
+    <Keywords color="Separator">
+      <Word>###</Word>
+    </Keywords>
+
+    <!-- HTTP methods at start of line -->
+    <Rule color="Method">
+      ^\s*(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS|TRACE|QUERY)\b
+    </Rule>
+
+    <!-- Headers: name: value -->
+    <Rule color="HeaderName">
+      ^[A-Za-z][A-Za-z0-9-]*\s*:
+    </Rule>
+  </RuleSet>
+</SyntaxDefinition>
