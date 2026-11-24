@@ -158,6 +158,16 @@ namespace OpenDevelop.HttpClient
                 responseText.AppendLine();
                 responseText.AppendLine(responseBody);
 
+                // Determine response file extension based on Content-Type
+                var ext = ".txt";
+                var contentType = response.Content.Headers.ContentType?.MediaType?.ToLowerInvariant() ?? "";
+                if (contentType.Contains("json")) ext = ".json";
+                else if (contentType.Contains("xml")) ext = ".xml";
+                else if (contentType.Contains("html")) ext = ".html";
+                else if (contentType.Contains("javascript")) ext = ".js";
+                else if (contentType.Contains("css")) ext = ".css";
+                else if (contentType.Contains("text/plain")) ext = ".txt";
+
                 // Store response for named request variable resolution
                 if (!string.IsNullOrWhiteSpace(requestName))
                 {
@@ -166,7 +176,7 @@ namespace OpenDevelop.HttpClient
 
                 // Open response in a new untitled document
                 var content = Encoding.UTF8.GetBytes(responseText.ToString());
-                SD.FileService.NewFile("Response.txt", content);
+                SD.FileService.NewFile("Response" + ext, content);
             }
             catch (Exception ex)
             {

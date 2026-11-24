@@ -7,7 +7,7 @@
   <Color name="Comment" foreground="Green" />
   <Color name="Variable" foreground="Purple" fontWeight="bold" />
   <Color name="Separator" foreground="Gray" fontWeight="bold" />
-  <Color name="Keyword" foreground="Blue" />
+  <Color name="Number" foreground="DarkBlue" />
 
   <RuleSet>
     <!-- Comments -->
@@ -24,7 +24,7 @@
 
     <!-- HTTP methods at start of line -->
     <Rule color="Method">
-      ^\s*(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS|TRACE|QUERY)\b
+      ^\s*(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS|TRACE|QUERY|CONNECT)\b
     </Rule>
 
     <!-- Headers: name: value -->
