@@ -14,62 +14,6 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <!-- Source files -->
-  <ItemGroup>
-    <Compile Include="../OpenDevelop.HttpClient/**/*.cs" />
-  </ItemGroup>
-
-  <!-- Embedded resources -->
-  <ItemGroup>
-    <EmbeddedResource Include="../OpenDevelop.HttpClient/Resources/Http.xshd" />
-  </ItemGroup>
-
-  <!-- Addin manifest -->
-  <ItemGroup>
-    <None Include="../OpenDevelop.HttpClient/OpenDevelop.HttpClient.addin" CopyToOutputDirectory="Always" />
-  </ItemGroup>
-
-  <!-- References to OpenDevelop host assemblies -->
-  <ItemGroup>
-    <Reference Include="ICSharpCode.SharpDevelop">
-      <HintPath>$(OpenDevelopHostBin)ICSharpCode.SharpDevelop.dll</HintPath>
-    </Reference>
-    <Reference Include="ICSharpCode.Core">
-      <HintPath>$(OpenDevelopHostBin)ICSharpCode.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="ICSharpCode.Core.Presentation">
-      <HintPath>$(OpenDevelopHostBin)ICSharpCode.Core.Presentation.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <!-- NuGet packages -->
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis" Version="5.6.0" />
-  </ItemGroup>
-</Project>
-EOF
-mkdir -p /Users/lextm/wpf-tools/OpenDevelop.HttpClient/src/OpenDevelop.HttpClient.Release
-mv /Users/lextm/wpf-tools/OpenDevelop.HttpClient/src/OpenDevelop.HttpClient.Release/OpenDevelop.HttpClient.Release.csproj /dev/null 2>/dev/null
-mkdir -p /Users/lextm/wpf-tools/OpenDevelop.HttpClient/src/OpenDevelop.HttpClient.Release
-mv /tmp/OpenDevelop.HttpClient.Release.csproj /Users/lextm/wpf-tools/OpenDevelop.HttpClient/src/OpenDevelop.HttpClient.Release/OpenDevelop.HttpClient.Release.csproj 2>/dev/null
-# Actually, let me just write it directly
-cat > /Users/lextm/wpf-tools/OpenDevelop.HttpClient/src/OpenDevelop.HttpClient.Release/OpenDevelop.HttpClient.Release.csproj << 'EOF'
-<Project Sdk="Microsoft.NET.Sdk;OpenDevelop.Addin.Sdk">
-  <PropertyGroup>
-    <OpenDevelopAddin>true</OpenDevelopAddin>
-    <OpenDevelopAddinKind>InProcess</OpenDevelopAddinKind>
-    <TargetFramework>net11.0-windows</TargetFramework>
-    <RootNamespace>OpenDevelop.HttpClient</RootNamespace>
-    <AssemblyName>OpenDevelop.HttpClient</AssemblyName>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <NoWarn>$(NoWarn);CA1416</NoWarn>
-    <UseWPF>true</UseWPF>
-    <OutputPath>$(MSBuildProjectDirectory)/bin/odaddin/</OutputPath>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="../OpenDevelop.HttpClient/**/*.cs" />
   </ItemGroup>
@@ -98,5 +42,3 @@ cat > /Users/lextm/wpf-tools/OpenDevelop.HttpClient/src/OpenDevelop.HttpClient.R
     <PackageReference Include="Microsoft.CodeAnalysis" Version="5.6.0" />
   </ItemGroup>
 </Project>
-EOF
-echo "Created"
