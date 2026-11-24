@@ -61,6 +61,9 @@
 		<MenuItem id    = "SaveHttpResponseBodyOnly"
 		          label = "Save HTTP Response Body Only"
 		          class = "OpenDevelop.HttpClient.SaveResponseBodyOnlyCommand"/>
+		<MenuItem id    = "ShowHttpResponseRich"
+		          label = "Show HTTP Response (Rich View)"
+		          class = "OpenDevelop.HttpClient.ShowResponseRichCommand"/>
 		<MenuItem id    = "OidcLogin"
 		          label = "OIDC Device Code Login"
 		          class = "OpenDevelop.HttpClient.OidcLoginCommand"/>
