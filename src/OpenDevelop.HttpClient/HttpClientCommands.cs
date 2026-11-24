@@ -102,6 +102,18 @@ namespace OpenDevelop.HttpClient
             var allowRedirect = !directives.Contains("no-redirect");
             var useCookieJar = !directives.Contains("no-cookie-jar");
 
+            // Timeout directive
+            TimeSpan? timeout = null;
+            foreach (var line in text.Substring(0, targetRequest.Span.Start).Split('\n'))
+            {
+                var m = System.Text.RegularExpressions.Regex.Match(line.Trim(), @"#\s*@timeout\s+(\d+)");
+                if (m.Success && int.TryParse(m.Groups[1].Value, out var seconds))
+                {
+                    timeout = TimeSpan.FromSeconds(seconds);
+                    break;
+                }
+            }
+
             // Find prompt variables for this request
             var promptVars = HttpPromptVariableResolver.FindPromptVariables(text, targetRequest.Span.Start);
             var promptValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -287,6 +299,10 @@ namespace OpenDevelop.HttpClient
                 }
 
                 using var client = new System.Net.Http.HttpClient(handler);
+                if (timeout.HasValue)
+                    client.Timeout = timeout.Value;
+                else
+                    client.Timeout = TimeSpan.FromMinutes(5);
                 var response = await client.SendAsync(request, _cts.Token);
                 var responseBody = await response.Content.ReadAsStringAsync(_cts.Token);
 
