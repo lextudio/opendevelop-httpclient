@@ -236,7 +236,15 @@ namespace OpenDevelop.HttpClient
                     handler.ClientCertificates.Add(cert);
                 }
 
-                // Digest auth: if Authorization header is "Digest user pass", use credentials
+                // Proxy support
+                var proxyUrl = Environment.GetEnvironmentVariable("HTTP_PROXY") ?? Environment.GetEnvironmentVariable("http_proxy");
+                if (!string.IsNullOrEmpty(proxyUrl) && Uri.TryCreate(proxyUrl, UriKind.Absolute, out var proxyUri))
+                {
+                    handler.Proxy = new System.Net.WebProxy(proxyUri);
+                    handler.UseProxy = true;
+                }
+
+                // Digest auth support
                 if (request.Headers.Authorization is not null &&
                     request.Headers.Authorization.Scheme.Equals("Digest", StringComparison.OrdinalIgnoreCase))
                 {
