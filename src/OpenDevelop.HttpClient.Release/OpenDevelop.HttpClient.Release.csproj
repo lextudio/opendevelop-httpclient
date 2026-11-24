@@ -3,6 +3,7 @@
     <OpenDevelopAddin>true</OpenDevelopAddin>
     <OpenDevelopAddinKind>InProcess</OpenDevelopAddinKind>
     <TargetFramework>net11.0-windows</TargetFramework>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <RootNamespace>OpenDevelop.HttpClient</RootNamespace>
     <AssemblyName>OpenDevelop.HttpClient</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
