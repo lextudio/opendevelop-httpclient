@@ -67,6 +67,9 @@
 		<MenuItem id    = "IndentHttpBody"
 		          label = "Indent HTTP Request Body"
 		          class = "OpenDevelop.HttpClient.IndentRequestBodyCommand"/>
+		<MenuItem id    = "PreviewHttpResponse"
+		          label = "Preview HTTP Response"
+		          class = "OpenDevelop.HttpClient.PreviewResponseCommand"/>
 		<MenuItem id    = "ShowHttpResponseRich"
 		          label = "Show HTTP Response (Rich View)"
 		          class = "OpenDevelop.HttpClient.ShowResponseRichCommand"/>
