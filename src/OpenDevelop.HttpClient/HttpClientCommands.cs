@@ -380,6 +380,33 @@ namespace OpenDevelop.HttpClient
                         }
                     }
                 }
+                // Azure AD v2: Authorization: AzureAD tenantId clientId clientSecret [scope]
+                if (request.Headers.Authorization is not null &&
+                    (request.Headers.Authorization.Scheme.Equals("AzureAD", StringComparison.OrdinalIgnoreCase) ||
+                     request.Headers.Authorization.Scheme.Equals("AAD", StringComparison.OrdinalIgnoreCase)))
+                {
+                    var param = request.Headers.Authorization.Parameter ?? "";
+                    var parts = param.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length >= 3)
+                    {
+                        var tenantId = parts[0];
+                        var clientId = parts[1];
+                        var clientSecret = parts[2];
+                        var scope = parts.Length >= 4 ? parts[3] : "https://graph.microsoft.com/.default";
+
+                        request.Headers.Authorization = null;
+                        var token = await AzureAdV2.GetAccessTokenAsync(tenantId, clientId, clientSecret, scope);
+                        if (token is not null)
+                        {
+                            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                        }
+                        else
+                        {
+                            MessageService.ShowMessage("Azure AD authentication failed.");
+                            return;
+                        }
+                    }
+                }
                 if (request.Headers.Authorization is not null &&
                     request.Headers.Authorization.Scheme.Equals("AWS", StringComparison.OrdinalIgnoreCase))
                 {
