@@ -65,18 +65,18 @@ jobs:
       - name: Build and pack HttpClient.odaddin
         env:
           NuGetPackageSourceCredentials_lextudio_github: "Username=lextm;Password=${{ github.token }};ValidAuthenticationTypes=Basic"
-        run: >
-          dotnet build src/OpenDevelop.HttpClient.Release/OpenDevelop.HttpClient.Release.csproj
-          -c Release -t:PackOdAddin --disable-build-servers
-          -p:OpenDevelopHostBin="$OPENDEVELOP_HOST"
-          -p:OpenDevelopAddinReleaseVersion="${{ steps.version.outputs.version }}"
-          -p:OpenDevelopDistributionBuild=true
-          -p:OpenDevelopDistributionRidFamily=linux
-          -p:RestoreConfigFile="$GITHUB_WORKSPACE/NuGet.Release.Config"
+        run: |
+          cp NuGet.Release.Config src/OpenDevelop.HttpClient/NuGet.config
+          dotnet build src/OpenDevelop.HttpClient/OpenDevelop.HttpClient.csproj \
+            -c Release -t:PackOdAddin --disable-build-servers \
+            -p:OpenDevelopHostBin="$OPENDEVELOP_HOST" \
+            -p:OpenDevelopAddinReleaseVersion="${{ steps.version.outputs.version }}" \
+            -p:OpenDevelopDistributionBuild=true \
+            -p:OpenDevelopDistributionRidFamily=linux
 
       - name: Check the package
         run: |
-          package=src/OpenDevelop.HttpClient.Release/bin/odaddin/HttpClient.odaddin
+          package=src/OpenDevelop.HttpClient/bin/odaddin/HttpClient.odaddin
           ls -l "$package"
           unzip -l "$package" | head -20
           [[ "$(unzip -Z1 "$package" | grep -c '^[^/]*\.addin$')" == "1" ]] || { echo "::error::the package must have exactly one .addin at its root"; exit 1; }
