@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Interactive.Http.Parsing;
@@ -38,6 +39,15 @@ namespace OpenDevelop.HttpClient
             }
 
             var text = editor.Document.Text;
+
+            // Load environment from the file's directory
+            var filePath = editor.FileName;
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                var dir = System.IO.Path.GetDirectoryName(filePath);
+                if (dir is not null)
+                    HttpEnvironmentManager.LoadFromWorkspace(dir);
+            }
             var parseResult = HttpRequestParser.Parse(text);
             var syntaxTree = parseResult.SyntaxTree;
             var rootNode = syntaxTree.RootNode;
@@ -68,7 +78,7 @@ namespace OpenDevelop.HttpClient
             }
             targetRequest ??= requests[0];
 
-            // Build binding delegate for variable resolution (environment + system variables).
+            // Build binding delegate for variable resolution (environment + system + request variables).
             // File variables (@var = ...) are resolved internally by TryGetHttpRequestMessage.
             HttpBindingDelegate bind = node =>
             {
@@ -77,7 +87,20 @@ namespace OpenDevelop.HttpClient
                 {
                     return ResolveSystemVariable(varName);
                 }
-                // Environment variables would be resolved here
+
+                // Request variables: name.response.body.$.path or name.response.headers.HeaderName
+                if (varName.Contains(".response.", StringComparison.OrdinalIgnoreCase))
+                {
+                    return ResolveRequestVariable(varName);
+                }
+
+                // Environment variables
+                var envValue = HttpEnvironmentManager.ResolveVariable(varName);
+                if (envValue is not null)
+                {
+                    return HttpBindingResult<object?>.Success(envValue);
+                }
+
                 return HttpBindingResult<object?>.Failure(Array.Empty<Diagnostic>());
             };
 
@@ -98,6 +121,24 @@ namespace OpenDevelop.HttpClient
                 return;
             }
 
+            // Basic auth auto-encoding: "Basic user:pass" or "Basic user pass" -> base64
+            if (request.Headers.Authorization is not null &&
+                request.Headers.Authorization.Scheme.Equals("Basic", StringComparison.OrdinalIgnoreCase))
+            {
+                var param = request.Headers.Authorization.Parameter ?? "";
+                if (!param.Contains('=') && !param.EndsWith("==") && !IsBase64(param))
+                {
+                    // Try "user:pass" or "user pass"
+                    var credentials = param.Contains(':') ? param : param.Replace(' ', ':');
+                    var encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(credentials));
+                    request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", encoded);
+                }
+            }
+
+            // Detect named request
+            var namedRequestNode = targetRequest.TryGetCommentNamedRequestNode();
+            var requestName = namedRequestNode?.ValueNode?.Text?.Trim();
+
             try
             {
                 using var client = new System.Net.Http.HttpClient();
@@ -117,6 +158,12 @@ namespace OpenDevelop.HttpClient
                 responseText.AppendLine();
                 responseText.AppendLine(responseBody);
 
+                // Store response for named request variable resolution
+                if (!string.IsNullOrWhiteSpace(requestName))
+                {
+                    HttpRequestVariableStore.StoreResponse(requestName, response, responseBody);
+                }
+
                 // Open response in a new untitled document
                 var content = Encoding.UTF8.GetBytes(responseText.ToString());
                 SD.FileService.NewFile("Response.txt", content);
@@ -127,9 +174,136 @@ namespace OpenDevelop.HttpClient
             }
         }
 
+        static bool IsBase64(string s)
+        {
+            if (string.IsNullOrEmpty(s) || s.Length % 4 != 0)
+                return false;
+            try
+            {
+                Convert.FromBase64String(s);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        static HttpBindingResult<object?> ResolveRequestVariable(string varName)
+        {
+            var parts = varName.Split(new[] { '.' }, 4);
+            if (parts.Length < 3)
+                return HttpBindingResult<object?>.Failure(Array.Empty<Diagnostic>());
+
+            var requestName = parts[0];
+            if (!HttpRequestVariableStore.TryGetResponse(requestName, out var response) || response is null)
+                return HttpBindingResult<object?>.Failure(Array.Empty<Diagnostic>());
+
+            var responseType = parts[1]; // "response"
+            var part = parts[2]; // "body" or "headers"
+
+            if (part.Equals("headers", StringComparison.OrdinalIgnoreCase) && parts.Length >= 4)
+            {
+                var headerName = parts[3];
+                if (response.Headers.TryGetValues(headerName, out var values))
+                    return HttpBindingResult<object?>.Success(string.Join(", ", values));
+                if (response.Content.Headers.TryGetValues(headerName, out var cvalues))
+                    return HttpBindingResult<object?>.Success(string.Join(", ", cvalues));
+                return HttpBindingResult<object?>.Failure(Array.Empty<Diagnostic>());
+            }
+
+            if (part.Equals("body", StringComparison.OrdinalIgnoreCase))
+            {
+                var body = HttpRequestVariableStore.GetRequestBody(requestName);
+                if (body is null)
+                    return HttpBindingResult<object?>.Failure(Array.Empty<Diagnostic>());
+
+                if (parts.Length < 4 || parts[3] == "*")
+                    return HttpBindingResult<object?>.Success(body);
+
+                var jsonPath = parts[3];
+                if (jsonPath.StartsWith("$.") || jsonPath.StartsWith("$["))
+                {
+                    // Simple JSONPath: $.property or $.array[0].property
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(body);
+                        var path = jsonPath.TrimStart('$').TrimStart('.');
+                        var element = doc.RootElement;
+                        foreach (var segment in path.Split('.'))
+                        {
+                            if (segment.Contains('['))
+                            {
+                                var idx = segment.IndexOf('[');
+                                var prop = segment.Substring(0, idx);
+                                if (!string.IsNullOrEmpty(prop))
+                                    element = element.GetProperty(prop);
+                                var indexStr = segment.Substring(idx + 1).TrimEnd(']');
+                                var index = int.Parse(indexStr);
+                                element = element[index];
+                            }
+                            else if (!string.IsNullOrEmpty(segment))
+                            {
+                                element = element.GetProperty(segment);
+                            }
+                        }
+                        return HttpBindingResult<object?>.Success(element.ToString());
+                    }
+                    catch
+                    {
+                        return HttpBindingResult<object?>.Failure(Array.Empty<Diagnostic>());
+                    }
+                }
+                return HttpBindingResult<object?>.Success(body);
+            }
+
+            return HttpBindingResult<object?>.Failure(Array.Empty<Diagnostic>());
+        }
+
         static HttpBindingResult<object?> ResolveSystemVariable(string varName)
         {
             var name = varName.TrimStart('$').ToLowerInvariant();
+
+            // Handle parameterized system variables
+            if (name.StartsWith("randomint"))
+            {
+                var args = name.Replace("randomint", "").Trim();
+                var parts = args.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length >= 2 && int.TryParse(parts[0], out var min) && int.TryParse(parts[1], out var max))
+                {
+                    var rng = new Random();
+                    return HttpBindingResult<object?>.Success(rng.Next(min, max).ToString());
+                }
+                return HttpBindingResult<object?>.Success(new Random().Next(0, 1000).ToString());
+            }
+
+            if (name.StartsWith("timestamp"))
+            {
+                return HttpBindingResult<object?>.Success(DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString());
+            }
+
+            if (name.StartsWith("datetime") || name.StartsWith("localdatetime"))
+            {
+                return HttpBindingResult<object?>.Success(DateTimeOffset.UtcNow.ToString("o"));
+            }
+
+            if (name.StartsWith("guid"))
+            {
+                return HttpBindingResult<object?>.Success(Guid.NewGuid().ToString());
+            }
+
+            if (name.StartsWith("processenv"))
+            {
+                var envVar = name.Replace("processenv", "").Trim().Trim('%');
+                if (!string.IsNullOrEmpty(envVar))
+                {
+                    var value = Environment.GetEnvironmentVariable(envVar);
+                    if (value is not null)
+                        return HttpBindingResult<object?>.Success(value);
+                }
+                return HttpBindingResult<object?>.Failure(Array.Empty<Diagnostic>());
+            }
+
             switch (name)
             {
                 case "guid":
@@ -137,7 +311,7 @@ namespace OpenDevelop.HttpClient
                 case "timestamp":
                     return HttpBindingResult<object?>.Success(DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString());
                 default:
-                    return HttpBindingResult<object?>.Failure(Array.Empty<Microsoft.CodeAnalysis.Diagnostic>());
+                    return HttpBindingResult<object?>.Failure(Array.Empty<Diagnostic>());
             }
         }
     }
