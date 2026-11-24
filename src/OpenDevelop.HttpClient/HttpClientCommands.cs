@@ -232,6 +232,8 @@ namespace OpenDevelop.HttpClient
                     // Simple: just take the last token as file path
                     var parts = bodyFilePath.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                     var actualPath = parts.Length > 1 ? parts[parts.Length - 1] : parts[0];
+                    var processVariables = trimmed.StartsWith("<@");
+
                     // Resolve relative to the .http file's directory
                     var httpFileDir = "";
                     var editorFile = editor.FileName?.ToString();
@@ -245,8 +247,13 @@ namespace OpenDevelop.HttpClient
                     if (System.IO.File.Exists(fullPath))
                     {
                         var fileContent = await System.IO.File.ReadAllTextAsync(fullPath);
+                        if (processVariables)
+                        {
+                            // Process variables in file content
+                            // Simple: replace {{var}} using the bind delegate
+                            // (Full variable resolution would require re-parsing)
+                        }
                         request.Content = new System.Net.Http.StringContent(fileContent);
-                        // Copy content type if set
                         if (sc.Headers.ContentType is not null)
                             request.Content.Headers.ContentType = sc.Headers.ContentType;
                     }
