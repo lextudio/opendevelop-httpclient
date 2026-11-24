@@ -61,6 +61,9 @@
 		<MenuItem id    = "OidcLogin"
 		          label = "OIDC Device Code Login"
 		          class = "OpenDevelop.HttpClient.OidcLoginCommand"/>
+		<MenuItem id    = "OidcAuthCodeLogin"
+		          label = "OIDC Browser Login"
+		          class = "OpenDevelop.HttpClient.OidcAuthCodeLoginCommand"/>
 	</Path>
 
 	<!-- Text editor tool tips -->
