@@ -38,18 +38,23 @@
   <ItemGroup>
     <Reference Include="ICSharpCode.SharpDevelop">
       <HintPath>$(OpenDevelopHostBin)ICSharpCode.SharpDevelop.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="ICSharpCode.Core">
       <HintPath>$(OpenDevelopHostBin)ICSharpCode.Core.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="ICSharpCode.Core.Presentation">
       <HintPath>$(OpenDevelopHostBin)ICSharpCode.Core.Presentation.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="ICSharpCode.AvalonEdit">
       <HintPath>$(OpenDevelopHostBin)ICSharpCode.AvalonEdit.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="ICSharpCode.LanguageServices.Contracts">
       <HintPath>$(OpenDevelopHostBin)ICSharpCode.LanguageServices.Contracts.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
 
