@@ -43,10 +43,8 @@
 		          class = "OpenDevelop.HttpClient.SendRequestCommand"/>
 	</Path>
 
-	<!-- Text editor context menu -->
-	<Path name = "/SharpDevelop/ViewContent/TextEditor/ContextMenu">
-		<MenuItem id    = "SendHttpRequest"
-		          label = "Send Request"
-		          class = "OpenDevelop.HttpClient.SendRequestCommand"/>
+	<!-- Code completion for .http and .rest files -->
+	<Path name = "/SharpDevelop/ViewContent/TextEditor/CodeCompletion">
+		<CodeCompletionBinding id = "Http-Completion" extensions = ".http;.rest" class = "OpenDevelop.HttpClient.HttpCodeCompletionBinding"/>
 	</Path>
 </AddIn>
