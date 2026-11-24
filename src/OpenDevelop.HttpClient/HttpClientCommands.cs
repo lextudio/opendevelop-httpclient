@@ -303,7 +303,18 @@ namespace OpenDevelop.HttpClient
                     client.Timeout = timeout.Value;
                 else
                     client.Timeout = TimeSpan.FromMinutes(5);
-                var response = await client.SendAsync(request, _cts.Token);
+                var isStreaming = request.Headers.Accept.Any(h => h.MediaType == "text/event-stream");
+
+                HttpResponseMessage response;
+                if (isStreaming)
+                {
+                    response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, _cts.Token);
+                }
+                else
+                {
+                    response = await client.SendAsync(request, _cts.Token);
+                }
+
                 var responseBody = await response.Content.ReadAsStringAsync(_cts.Token);
 
                 // Store cookies for subsequent requests
