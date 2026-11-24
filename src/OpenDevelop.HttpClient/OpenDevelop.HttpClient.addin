@@ -43,6 +43,12 @@
 		<MenuItem id    = "SendHttpRequest"
 		          label = "Send HTTP Request"
 		          class = "OpenDevelop.HttpClient.SendRequestCommand"/>
+		<MenuItem id    = "ViewHttpHistory"
+		          label = "View HTTP Request History"
+		          class = "OpenDevelop.HttpClient.ViewHistoryCommand"/>
+		<MenuItem id    = "ClearHttpHistory"
+		          label = "Clear HTTP Request History"
+		          class = "OpenDevelop.HttpClient.ClearHistoryCommand"/>
 	</Path>
 
 	<!-- Text editor tool tips -->
