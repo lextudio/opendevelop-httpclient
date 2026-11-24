@@ -5,7 +5,8 @@
        addInManagerHidden = "preinstalled">
 
 	<Manifest>
-		<Identity name = "OpenDevelop.HttpClient"/>
+		<Identity name = "OpenDevelop.HttpClient" version = "0.1.0"/>
+		<Dependency addin = "SharpDevelop" version = "5.9" />
 	</Manifest>
 
 	<Runtime>

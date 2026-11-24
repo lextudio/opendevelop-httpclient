@@ -1,0 +1,102 @@
+name: Release the OpenDevelop add-in
+
+# Pushing a tag vMAJOR.MINOR.PATCH[-suffix] builds the HTTP Client add-in as HttpClient.odaddin against an
+# OpenDevelop release and publishes it as the one asset of a GitHub release of this repository. OpenDevelop users who
+# trust this repository (Tools > Options > AddIns > Trusted repositories) then see it in the AddIn Manager.
+#
+# The add-in is built against an unpacked OpenDevelop release (no OpenDevelop source, no GitHub Packages token): its
+# assemblies are referenced from there and the Addin SDK is the one that release ships.
+#
+# Run by hand (workflow_dispatch) it is a rehearsal: it builds and checks the package and uploads it as a run
+# artifact, but releases nothing.
+
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build, without the leading v (it must equal the Identity version in OpenDevelop.HttpClient.addin)'
+        required: true
+      opendevelop_tag:
+        description: 'OpenDevelop release to build against'
+        default: 'v5.9.3'
+
+permissions:
+  contents: write
+
+env:
+  OPENDEVELOP_REPOSITORY: lextudio/OpenDevelop
+  OPENDEVELOP_TAG: ${{ inputs.opendevelop_tag || vars.OPENDEVELOP_TAG || 'v5.9.3' }}
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 11.0.x
+
+      - name: Work out the version
+        id: version
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then version="${GITHUB_REF_NAME#v}"; else version="${{ inputs.version }}"; fi
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]] || { echo "::error::'$version' is not MAJOR.MINOR.PATCH[-suffix]"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Building $version against OpenDevelop $OPENDEVELOP_TAG"
+
+      - name: Download the OpenDevelop release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/opendevelop"
+          gh release download "$OPENDEVELOP_TAG" --repo "$OPENDEVELOP_REPOSITORY" --pattern 'OpenDevelop-linux-x64.tar.xz' --dir "$RUNNER_TEMP/opendevelop"
+          tar -xJf "$RUNNER_TEMP/opendevelop/OpenDevelop-linux-x64.tar.xz" -C "$RUNNER_TEMP/opendevelop"
+          host="$RUNNER_TEMP/opendevelop/OpenDevelop-linux-x64"
+          for required in ICSharpCode.SharpDevelop.dll Sdks/OpenDevelop.Addin.Sdk/Sdk/Sdk.targets SdkResolvers/OpenDevelop.Addin.SdkResolver/OpenDevelop.Addin.SdkResolver.dll; do
+            [[ -f "$host/$required" ]] || { echo "::error::$OPENDEVELOP_TAG does not contain $required"; exit 1; }
+          done
+          echo "OPENDEVELOP_HOST=$host/" >> "$GITHUB_ENV"
+          echo "MSBUILDADDITIONALSDKRESOLVERSFOLDER=$host/SdkResolvers" >> "$GITHUB_ENV"
+
+      - name: Build and pack HttpClient.odaddin
+        run: >
+          dotnet build src/OpenDevelop.HttpClient/OpenDevelop.HttpClient.csproj
+          -c Release -t:PackOdAddin --disable-build-servers
+          -p:OpenDevelopHostBin="$OPENDEVELOP_HOST"
+          -p:OpenDevelopAddinReleaseVersion="${{ steps.version.outputs.version }}"
+          -p:OpenDevelopDistributionBuild=true
+          -p:OpenDevelopDistributionRidFamily=linux
+          -p:RestoreConfigFile="$GITHUB_WORKSPACE/NuGet.Release.Config"
+
+      - name: Check the package
+        run: |
+          package=src/OpenDevelop.HttpClient/bin/odaddin/HttpClient.odaddin
+          ls -l "$package"
+          unzip -l "$package" | head -20
+          [[ "$(unzip -Z1 "$package" | grep -c '^[^/]*\.addin$')" == "1" ]] || { echo "::error::the package must have exactly one .addin at its root"; exit 1; }
+          size=$(stat -c %s "$package"); (( size < 200*1024*1024 )) || { echo "::error::package is $size bytes; the host payload is probably not trimmed"; exit 1; }
+          cp "$package" HttpClient.odaddin
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HttpClient.odaddin
+          path: HttpClient.odaddin
+          if-no-files-found: error
+
+      - name: Publish the release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          flags=()
+          [[ "$GITHUB_REF_NAME" == *-* ]] && flags+=(--prerelease)
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" HttpClient.odaddin --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" HttpClient.odaddin --title "$GITHUB_REF_NAME" \
+              --notes "HTTP Client for OpenDevelop ${OPENDEVELOP_TAG#v} (add-in version ${GITHUB_REF_NAME#v}). Trust this repository in Tools > Options > AddIns > Trusted repositories, then install it from the AddIn Manager." "${flags[@]}"
+          fi
