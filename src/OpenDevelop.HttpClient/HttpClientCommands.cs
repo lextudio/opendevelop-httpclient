@@ -319,6 +319,53 @@ namespace OpenDevelop.HttpClient
                         var username = parts[0];
                         var password = parts[1];
                         handler.Credentials = new System.Net.NetworkCredential(username, password);
+                        request.Headers.Authorization = null;
+                    }
+                }
+
+                // AWS Signature v4
+                if (request.Headers.Authorization is not null &&
+                    request.Headers.Authorization.Scheme.Equals("AWS", StringComparison.OrdinalIgnoreCase))
+                if (request.Headers.Authorization is not null &&
+                    request.Headers.Authorization.Scheme.Equals("AWS", StringComparison.OrdinalIgnoreCase))
+                {
+                    var param = request.Headers.Authorization.Parameter ?? "";
+                    var parts = param.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length >= 2)
+                    {
+                        var accessKey = parts[0];
+                        var secretKey = parts[1];
+                        string? sessionToken = null;
+                        var region = "";
+                        var service = "";
+
+                        foreach (var p in parts.Skip(2))
+                        {
+                            if (p.StartsWith("token:", StringComparison.OrdinalIgnoreCase))
+                                sessionToken = p.Substring(6);
+                            else if (p.StartsWith("region:", StringComparison.OrdinalIgnoreCase))
+                                region = p.Substring(7);
+                            else if (p.StartsWith("service:", StringComparison.OrdinalIgnoreCase))
+                                service = p.Substring(8);
+                        }
+
+                        if (string.IsNullOrEmpty(region))
+                            region = Environment.GetEnvironmentVariable("AWS_REGION") ?? "us-east-1";
+                        if (string.IsNullOrEmpty(service))
+                            service = request.RequestUri!.Host.Split('.')[0]; // guess from host
+
+                        request.Headers.Authorization = null; // Remove manual auth header
+                        AwsSignatureV4.Sign(request, accessKey, secretKey, sessionToken, region, service);
+                    }
+                }
+                {
+                    var param = request.Headers.Authorization.Parameter ?? "";
+                    var parts = param.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length >= 2)
+                    {
+                        var username = parts[0];
+                        var password = parts[1];
+                        handler.Credentials = new System.Net.NetworkCredential(username, password);
                         // Remove the manual Authorization header so handler can manage it
                         request.Headers.Authorization = null;
                     }
