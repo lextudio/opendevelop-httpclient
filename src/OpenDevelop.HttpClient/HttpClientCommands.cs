@@ -109,6 +109,29 @@ namespace OpenDevelop.HttpClient
                     return HttpBindingResult<object?>.Success(envValue);
                 }
 
+                // .env file variables: {{$dotenv VARNAME}}
+                if (varName.StartsWith("dotenv", StringComparison.OrdinalIgnoreCase))
+                {
+                    var dotenvVar = varName.Substring("dotenv".Length).Trim().Trim('%');
+                    if (!string.IsNullOrEmpty(dotenvVar))
+                    {
+                        // Look for .env file in the same directory as the .http file
+                        // (simplified: check current directory)
+                        var envFile = System.IO.Path.Combine(Environment.CurrentDirectory, ".env");
+                        if (System.IO.File.Exists(envFile))
+                        {
+                            foreach (var line in System.IO.File.ReadAllLines(envFile))
+                            {
+                                var parts = line.Split(new[] { '=' }, 2);
+                                if (parts.Length == 2 && parts[0].Trim().Equals(dotenvVar, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    return HttpBindingResult<object?>.Success(parts[1].Trim());
+                                }
+                            }
+                        }
+                    }
+                }
+
                 return HttpBindingResult<object?>.Failure(Array.Empty<Diagnostic>());
             };
 
