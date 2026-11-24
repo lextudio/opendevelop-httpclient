@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace OpenDevelop.HttpClient
@@ -15,36 +16,67 @@ namespace OpenDevelop.HttpClient
         /// </summary>
         public static string CurlToHttp(string curlCommand)
         {
-            var lines = curlCommand.Trim().Split(new[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+            // Simple tokenizer that handles quoted strings
+            var tokens = new List<string>();
+            var current = new StringBuilder();
+            bool inQuote = false;
+            bool inDoubleQuote = false;
+
+            foreach (char c in curlCommand)
+            {
+                if (c == '\'' && !inDoubleQuote)
+                {
+                    inQuote = !inQuote;
+                }
+                else if (c == '"' && !inQuote)
+                {
+                    inDoubleQuote = !inDoubleQuote;
+                }
+                else if ((c == ' ' || c == '\t' || c == '\n' || c == '\r') && !inQuote && !inDoubleQuote)
+                {
+                    if (current.Length > 0)
+                    {
+                        tokens.Add(current.ToString());
+                        current.Clear();
+                    }
+                }
+                else
+                {
+                    current.Append(c);
+                }
+            }
+            if (current.Length > 0)
+                tokens.Add(current.ToString());
+
             var method = "GET";
             var url = "";
             var headers = new List<string>();
             var body = "";
             var followRedirects = false;
 
-            for (int i = 0; i < lines.Length; i++)
+            for (int i = 0; i < tokens.Count; i++)
             {
-                var arg = lines[i];
+                var arg = tokens[i];
                 switch (arg.ToLowerInvariant())
                 {
                     case "curl":
                         break;
                     case "-x":
                     case "--request":
-                        if (i + 1 < lines.Length) method = lines[++i].ToUpperInvariant();
+                        if (i + 1 < tokens.Count) method = tokens[++i].ToUpperInvariant();
                         break;
                     case "-h":
                     case "--header":
-                        if (i + 1 < lines.Length) headers.Add(lines[++i]);
+                        if (i + 1 < tokens.Count) headers.Add(tokens[++i]);
                         break;
                     case "-d":
                     case "--data":
                     case "--data-ascii":
                     case "--data-binary":
                     case "--data-raw":
-                        if (i + 1 < lines.Length)
+                        if (i + 1 < tokens.Count)
                         {
-                            body = lines[++i];
+                            body = tokens[++i];
                             if (method == "GET") method = "POST";
                         }
                         break;
@@ -54,9 +86,9 @@ namespace OpenDevelop.HttpClient
                         break;
                     case "-u":
                     case "--user":
-                        if (i + 1 < lines.Length)
+                        if (i + 1 < tokens.Count)
                         {
-                            var creds = lines[++i];
+                            var creds = tokens[++i];
                             var encoded = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(creds));
                             headers.Add($"Authorization: Basic {encoded}");
                         }

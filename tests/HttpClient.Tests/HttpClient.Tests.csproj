@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="5.6.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../../src/OpenDevelop.HttpClient/Parsing/*.cs" />
+    <Compile Include="../../src/OpenDevelop.HttpClient/HttpEnvironment.cs" />
+    <Compile Include="../../src/OpenDevelop.HttpClient/HttpCurlConverter.cs" />
+    <Compile Include="../../src/OpenDevelop.HttpClient/HttpCodeSnippetGenerator.cs" />
+    <Compile Include="../../src/OpenDevelop.HttpClient/HttpCookieJar.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Microsoft.CodeAnalysis.Text" />
+  </ItemGroup>
+</Project>
