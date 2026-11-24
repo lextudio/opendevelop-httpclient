@@ -212,7 +212,17 @@ namespace OpenDevelop.HttpClient
             try
             {
                 HttpCookieJar.ApplyCookies(request);
-                using var client = new System.Net.Http.HttpClient();
+
+                var handler = new System.Net.Http.HttpClientHandler();
+                var certPath = Environment.GetEnvironmentVariable("HTTP_CLIENT_CERT");
+                var certPassword = Environment.GetEnvironmentVariable("HTTP_CLIENT_CERT_PASSWORD");
+                if (!string.IsNullOrEmpty(certPath) && System.IO.File.Exists(certPath))
+                {
+                    var cert = new System.Security.Cryptography.X509Certificates.X509Certificate2(certPath, certPassword);
+                    handler.ClientCertificates.Add(cert);
+                }
+
+                using var client = new System.Net.Http.HttpClient(handler);
                 var response = await client.SendAsync(request, _cts.Token);
                 var responseBody = await response.Content.ReadAsStringAsync(_cts.Token);
 
