@@ -316,6 +316,8 @@ namespace OpenDevelop.HttpClient
                     var proxyPass = Environment.GetEnvironmentVariable("HTTP_PROXY_PASS");
                     if (!string.IsNullOrEmpty(proxyUser))
                         proxy.Credentials = new System.Net.NetworkCredential(proxyUser, proxyPass);
+                    else
+                        proxy.UseDefaultCredentials = true;
                     handler.Proxy = proxy;
                     handler.UseProxy = true;
                 }
