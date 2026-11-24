@@ -46,6 +46,9 @@
 		<MenuItem id    = "ViewHttpHistory"
 		          label = "View HTTP Request History"
 		          class = "OpenDevelop.HttpClient.ViewHistoryCommand"/>
+		<MenuItem id    = "ShowHttpHistoryPad"
+		          label = "Show HTTP History Window"
+		          class = "OpenDevelop.HttpClient.ShowHistoryPadCommand"/>
 		<MenuItem id    = "ClearHttpHistory"
 		          label = "Clear HTTP Request History"
 		          class = "OpenDevelop.HttpClient.ClearHistoryCommand"/>
