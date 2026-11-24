@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk;OpenDevelop.Addin.Sdk">
+<Project Sdk="LibreWPF.Sdk">
   <PropertyGroup>
     <OpenDevelopAddin>true</OpenDevelopAddin>
     <OpenDevelopAddinKind>InProcess</OpenDevelopAddinKind>
@@ -13,6 +13,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <OpenDevelopAddinManifest>../OpenDevelop.HttpClient/OpenDevelop.HttpClient.addin</OpenDevelopAddinManifest>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,24 +26,6 @@
 
   <ItemGroup>
     <None Include="../OpenDevelop.HttpClient/OpenDevelop.HttpClient.addin" CopyToOutputDirectory="Always" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="ICSharpCode.SharpDevelop">
-      <HintPath>$(OpenDevelopHostBin)ICSharpCode.SharpDevelop.dll</HintPath>
-    </Reference>
-    <Reference Include="ICSharpCode.Core">
-      <HintPath>$(OpenDevelopHostBin)ICSharpCode.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="ICSharpCode.Core.Presentation">
-      <HintPath>$(OpenDevelopHostBin)ICSharpCode.Core.Presentation.dll</HintPath>
-    </Reference>
-    <Reference Include="ICSharpCode.AvalonEdit">
-      <HintPath>$(OpenDevelopHostBin)ICSharpCode.AvalonEdit.dll</HintPath>
-    </Reference>
-    <Reference Include="ICSharpCode.LanguageServices.Contracts">
-      <HintPath>$(OpenDevelopHostBin)ICSharpCode.LanguageServices.Contracts.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>

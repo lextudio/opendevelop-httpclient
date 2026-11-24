@@ -63,6 +63,8 @@ jobs:
           echo "MSBUILDADDITIONALSDKRESOLVERSFOLDER=$host/SdkResolvers" >> "$GITHUB_ENV"
 
       - name: Build and pack HttpClient.odaddin
+        env:
+          NuGetPackageSourceCredentials_lextudio_github: "Username=lextm;Password=${{ github.token }};ValidAuthenticationTypes=Basic"
         run: >
           dotnet build src/OpenDevelop.HttpClient.Release/OpenDevelop.HttpClient.Release.csproj
           -c Release -t:PackOdAddin --disable-build-servers
