@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk;OpenDevelop.Addin.Sdk">
+  <PropertyGroup>
+    <OpenDevelopAddin>true</OpenDevelopAddin>
+    <OpenDevelopAddinKind>InProcess</OpenDevelopAddinKind>
+    <TargetFramework>net11.0-windows</TargetFramework>
+    <RootNamespace>OpenDevelop.HttpClient</RootNamespace>
+    <AssemblyName>OpenDevelop.HttpClient</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+    <UseWPF>true</UseWPF>
+    <OutputPath>$(MSBuildProjectDirectory)/bin/odaddin/</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../OpenDevelop.HttpClient/**/*.cs" Exclude="../OpenDevelop.HttpClient/obj/**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="../OpenDevelop.HttpClient/Resources/Http.xshd" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../OpenDevelop.HttpClient/OpenDevelop.HttpClient.addin" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="ICSharpCode.SharpDevelop">
+      <HintPath>$(OpenDevelopHostBin)ICSharpCode.SharpDevelop.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.Core">
+      <HintPath>$(OpenDevelopHostBin)ICSharpCode.Core.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>
