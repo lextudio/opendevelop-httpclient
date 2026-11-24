@@ -73,6 +73,9 @@
 		<MenuItem id    = "ShowHttpResponseRich"
 		          label = "Show HTTP Response (Rich View)"
 		          class = "OpenDevelop.HttpClient.ShowResponseRichCommand"/>
+		<MenuItem id    = "ShowResponseViewer"
+		          label = "Show HTTP Response Viewer"
+		          class = "OpenDevelop.HttpClient.ResponseViewerWindowCommand"/>
 		<MenuItem id    = "ViewImageResponse"
 		          label = "View Image Response"
 		          class = "OpenDevelop.HttpClient.ViewImageResponseCommand"/>
