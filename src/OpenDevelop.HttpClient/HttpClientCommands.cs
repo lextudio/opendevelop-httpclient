@@ -267,6 +267,13 @@ namespace OpenDevelop.HttpClient
                 // Store cookies for subsequent requests
                 if (request.RequestUri is not null)
                     HttpCookieJar.StoreCookies(request.RequestUri.Host, response.Headers);
+
+                // Record history
+                HttpRequestHistory.Record(
+                    request.Method.Method,
+                    request.RequestUri?.ToString() ?? "",
+                    (int)response.StatusCode,
+                    requestName);
                 var responseText = new StringBuilder();
                 responseText.AppendLine($"HTTP/{response.Version} {(int)response.StatusCode} {response.ReasonPhrase}");
                 responseText.AppendLine();
