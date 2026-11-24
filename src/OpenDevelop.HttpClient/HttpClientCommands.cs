@@ -194,7 +194,33 @@ namespace OpenDevelop.HttpClient
                 return;
             }
 
-            // Handle file body references: "< ./file.json" or "<@ ./file.json"
+            // Handle WebSocket requests
+            if (request.Method.Method.Equals("WEBSOCKET", StringComparison.OrdinalIgnoreCase) ||
+                request.Method.Method.Equals("WS", StringComparison.OrdinalIgnoreCase))
+            {
+                if (request.RequestUri is null)
+                {
+                    MessageService.ShowMessage("Invalid WebSocket URL.");
+                    return;
+                }
+                try
+                {
+                    _cts = new System.Threading.CancellationTokenSource();
+                    var wsResult = await HttpWebSocketHandler.ConnectAndReceiveAsync(
+                        request.RequestUri.ToString(), null, _cts.Token);
+                    SD.FileService.NewFile("WebSocketResponse.txt", System.Text.Encoding.UTF8.GetBytes(wsResult));
+                }
+                catch (Exception ex)
+                {
+                    MessageService.ShowMessage("WebSocket failed: " + ex.Message);
+                }
+                finally
+                {
+                    _cts?.Dispose();
+                    _cts = null;
+                }
+                return;
+            }
             if (request.Content is System.Net.Http.StringContent sc)
             {
                 var bodyText = await sc.ReadAsStringAsync();
