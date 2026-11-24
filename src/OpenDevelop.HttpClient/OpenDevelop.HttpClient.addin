@@ -61,6 +61,9 @@
 		<MenuItem id    = "SaveHttpResponseBodyOnly"
 		          label = "Save HTTP Response Body Only"
 		          class = "OpenDevelop.HttpClient.SaveResponseBodyOnlyCommand"/>
+		<MenuItem id    = "FormatHttpBody"
+		          label = "Format HTTP Request Body"
+		          class = "OpenDevelop.HttpClient.FormatRequestBodyCommand"/>
 		<MenuItem id    = "ShowHttpResponseRich"
 		          label = "Show HTTP Response (Rich View)"
 		          class = "OpenDevelop.HttpClient.ShowResponseRichCommand"/>
