@@ -222,6 +222,22 @@ namespace OpenDevelop.HttpClient
                     handler.ClientCertificates.Add(cert);
                 }
 
+                // Digest auth: if Authorization header is "Digest user pass", use credentials
+                if (request.Headers.Authorization is not null &&
+                    request.Headers.Authorization.Scheme.Equals("Digest", StringComparison.OrdinalIgnoreCase))
+                {
+                    var param = request.Headers.Authorization.Parameter ?? "";
+                    var parts = param.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length >= 2)
+                    {
+                        var username = parts[0];
+                        var password = parts[1];
+                        handler.Credentials = new System.Net.NetworkCredential(username, password);
+                        // Remove the manual Authorization header so handler can manage it
+                        request.Headers.Authorization = null;
+                    }
+                }
+
                 using var client = new System.Net.Http.HttpClient(handler);
                 var response = await client.SendAsync(request, _cts.Token);
                 var responseBody = await response.Content.ReadAsStringAsync(_cts.Token);
