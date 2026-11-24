@@ -304,7 +304,12 @@ namespace OpenDevelop.HttpClient
                 var proxyUrl = Environment.GetEnvironmentVariable("HTTP_PROXY") ?? Environment.GetEnvironmentVariable("http_proxy");
                 if (!string.IsNullOrEmpty(proxyUrl) && Uri.TryCreate(proxyUrl, UriKind.Absolute, out var proxyUri))
                 {
-                    handler.Proxy = new System.Net.WebProxy(proxyUri);
+                    var proxy = new System.Net.WebProxy(proxyUri);
+                    var proxyUser = Environment.GetEnvironmentVariable("HTTP_PROXY_USER");
+                    var proxyPass = Environment.GetEnvironmentVariable("HTTP_PROXY_PASS");
+                    if (!string.IsNullOrEmpty(proxyUser))
+                        proxy.Credentials = new System.Net.NetworkCredential(proxyUser, proxyPass);
+                    handler.Proxy = proxy;
                     handler.UseProxy = true;
                 }
 
