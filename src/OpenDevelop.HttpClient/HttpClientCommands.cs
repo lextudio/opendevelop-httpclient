@@ -625,7 +625,7 @@ namespace OpenDevelop.HttpClient
             return HttpBindingResult<object?>.Failure(Array.Empty<Diagnostic>());
         }
 
-        static HttpBindingResult<object?> ResolveSystemVariable(string varName)
+        internal static HttpBindingResult<object?> ResolveSystemVariable(string varName)
         {
             var name = varName.TrimStart('$').ToLowerInvariant();
 
