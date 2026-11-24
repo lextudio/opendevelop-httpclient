@@ -18,7 +18,53 @@ namespace OpenDevelop.HttpClient
         readonly NoOpLanguageService _noop = NoOpLanguageService.Instance;
 
         public WorkspaceDocumentInfo? GetWorkspaceDocumentInfo(DocumentId documentId) => _noop.GetWorkspaceDocumentInfo(documentId);
-        public Task<LensDocumentResult> GetLensDocumentAsync(DocumentId documentId, CancellationToken cancellationToken) => _noop.GetLensDocumentAsync(documentId, cancellationToken);
+        public Task<LensDocumentResult> GetLensDocumentAsync(DocumentId documentId, CancellationToken cancellationToken)
+        {
+            var anchors = new List<LensAnchorResult>();
+            try
+            {
+                var text = System.IO.File.Exists(documentId.FileName)
+                    ? System.IO.File.ReadAllText(documentId.FileName)
+                    : "";
+                if (string.IsNullOrEmpty(text))
+                    return Task.FromResult(new LensDocumentResult(DocumentReadiness.Ready, anchors));
+
+                var sourceText = Microsoft.CodeAnalysis.Text.SourceText.From(text);
+                var parseResult = HttpRequestParser.Parse(text);
+                var tree = parseResult.SyntaxTree;
+                var requests = new List<HttpRequestNode>();
+                foreach (var child in tree.RootNode.ChildNodes)
+                {
+                    if (child is HttpRequestNode req)
+                        requests.Add(req);
+                }
+
+                int anchorId = 0;
+                foreach (var req in requests)
+                {
+                    var method = req.MethodNode?.Text ?? "GET";
+                    var url = req.UrlNode?.Text ?? "";
+                    var displayName = $"▶ Send {method} {url}";
+
+                    // Convert Roslyn TextSpan to 1-based line/column
+                    var startLine = sourceText.Lines.GetLineFromPosition(req.Span.Start);
+                    var lineNum = startLine.LineNumber + 1;
+                    var colNum = req.Span.Start - startLine.Start + 1;
+
+                    anchors.Add(new LensAnchorResult(
+                        anchorId++.ToString(),
+                        new TextSpan(
+                            new TextPosition(lineNum, colNum),
+                            new TextPosition(lineNum, colNum)),
+                        displayName,
+                        null,
+                        SymbolOverridability.None,
+                        -1, -1, -1));
+                }
+            }
+            catch { }
+            return Task.FromResult(new LensDocumentResult(DocumentReadiness.Ready, anchors));
+        }
         public DocumentReadiness GetDocumentReadiness(DocumentId documentId) => DocumentReadiness.Ready;
         public long GetWorkspaceRevision() => 0;
 
