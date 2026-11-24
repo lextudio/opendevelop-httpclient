@@ -55,6 +55,9 @@
 		<MenuItem id    = "SaveHttpResponseBody"
 		          label = "Save HTTP Response Body"
 		          class = "OpenDevelop.HttpClient.SaveResponseBodyCommand"/>
+		<MenuItem id    = "OidcLogin"
+		          label = "OIDC Device Code Login"
+		          class = "OpenDevelop.HttpClient.OidcLoginCommand"/>
 	</Path>
 
 	<!-- Text editor tool tips -->
