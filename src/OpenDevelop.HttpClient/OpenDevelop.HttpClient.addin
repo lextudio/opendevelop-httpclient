@@ -52,6 +52,9 @@
 		<MenuItem id    = "SwitchHttpEnvironment"
 		          label = "Switch HTTP Environment"
 		          class = "OpenDevelop.HttpClient.SwitchEnvironmentCommand"/>
+		<MenuItem id    = "SaveHttpResponseBody"
+		          label = "Save HTTP Response Body"
+		          class = "OpenDevelop.HttpClient.SaveResponseBodyCommand"/>
 	</Path>
 
 	<!-- Text editor tool tips -->

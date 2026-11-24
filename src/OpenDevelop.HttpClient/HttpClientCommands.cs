@@ -478,9 +478,9 @@ namespace OpenDevelop.HttpClient
 
                 var responseBody = await response.Content.ReadAsStringAsync(_cts.Token);
 
-                // Store cookies for subsequent requests
-                if (useCookieJar && request.RequestUri is not null)
-                    HttpCookieJar.StoreCookies(request.RequestUri.Host, response.Headers);
+                // Store response body for "Save Response Body" command
+                LastResponseStore.LastResponseBody = responseBody;
+                LastResponseStore.LastContentType = response.Content.Headers.ContentType?.MediaType;
 
                 // Record history
                 HttpRequestHistory.Record(
