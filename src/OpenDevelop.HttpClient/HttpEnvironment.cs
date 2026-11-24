@@ -103,17 +103,34 @@ namespace OpenDevelop.HttpClient
         public static void LoadFromWorkspace(string workspaceDir)
         {
             _environments.Clear();
-            // Try http-client.env.json
-            var envFile = System.IO.Path.Combine(workspaceDir, "http-client.env.json");
-            if (System.IO.File.Exists(envFile))
+            // Try http-client.env.json (JetBrains format)
+            LoadEnvFile(System.IO.Path.Combine(workspaceDir, "http-client.env.json"));
+            // Try http-client.private.env.json (JetBrains private env)
+            LoadEnvFile(System.IO.Path.Combine(workspaceDir, "http-client.private.env.json"));
+            // Try .rest-client env or rest-client environmentVariables in settings
+            // (already handled by http-client.env.json above)
+
+            if (_environments.Count == 0)
             {
-                try
+                _environments.Add(new HttpEnvironment { Name = "No Environment" });
+            }
+        }
+
+        static void LoadEnvFile(string envFile)
+        {
+            if (!System.IO.File.Exists(envFile))
+                return;
+            try
+            {
+                var json = System.IO.File.ReadAllText(envFile);
+                using var doc = JsonDocument.Parse(json);
+                foreach (var prop in doc.RootElement.EnumerateObject())
                 {
-                    var json = System.IO.File.ReadAllText(envFile);
-                    using var doc = JsonDocument.Parse(json);
-                    foreach (var prop in doc.RootElement.EnumerateObject())
+                    if (prop.Value.ValueKind == JsonValueKind.Object)
                     {
-                        if (prop.Value.ValueKind == JsonValueKind.Object)
+                        // Find existing env with same name and merge
+                        var existing = _environments.Find(e => e.Name == prop.Name);
+                        if (existing is null)
                         {
                             var env = new HttpEnvironment { Name = prop.Name };
                             foreach (var v in prop.Value.EnumerateObject())
@@ -123,16 +140,18 @@ namespace OpenDevelop.HttpClient
                             }
                             _environments.Add(env);
                         }
+                        else
+                        {
+                            foreach (var v in prop.Value.EnumerateObject())
+                            {
+                                if (v.Value.ValueKind == JsonValueKind.String)
+                                    existing.Variables[v.Name] = v.Value.GetString() ?? "";
+                            }
+                        }
                     }
                 }
-                catch { }
             }
-
-            // Also try .rest-client / .vscode settings
-            if (_environments.Count == 0)
-            {
-                _environments.Add(new HttpEnvironment { Name = "No Environment" });
-            }
+            catch { }
         }
     }
 }
