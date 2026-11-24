@@ -86,8 +86,18 @@ namespace OpenDevelop.HttpClient
             }
             targetRequest ??= requests[0];
 
-            // Build binding delegate for variable resolution (environment + system + request variables).
-            // File variables (@var = ...) are resolved internally by TryGetHttpRequestMessage.
+            // Find prompt variables for this request
+            var promptVars = HttpPromptVariableResolver.FindPromptVariables(text, targetRequest.Span.Start);
+            var promptValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var (name, desc) in promptVars)
+            {
+                var value = HttpPromptVariableResolver.PromptForValue(name, desc);
+                if (value is null)
+                    return; // User cancelled
+                promptValues[name] = value;
+            }
+
+            // Build binding delegate for variable resolution
             HttpBindingDelegate bind = node =>
             {
                 var varName = node.Text.Trim();
@@ -96,7 +106,13 @@ namespace OpenDevelop.HttpClient
                     return ResolveSystemVariable(varName);
                 }
 
-                // Request variables: name.response.body.$.path or name.response.headers.HeaderName
+                // Prompt variables (highest precedence)
+                if (promptValues.TryGetValue(varName, out var promptValue))
+                {
+                    return HttpBindingResult<object?>.Success(promptValue);
+                }
+
+                // Request variables
                 if (varName.Contains(".response.", StringComparison.OrdinalIgnoreCase))
                 {
                     return ResolveRequestVariable(varName);
@@ -109,14 +125,12 @@ namespace OpenDevelop.HttpClient
                     return HttpBindingResult<object?>.Success(envValue);
                 }
 
-                // .env file variables: {{$dotenv VARNAME}}
+                // .env file variables
                 if (varName.StartsWith("dotenv", StringComparison.OrdinalIgnoreCase))
                 {
                     var dotenvVar = varName.Substring("dotenv".Length).Trim().Trim('%');
                     if (!string.IsNullOrEmpty(dotenvVar))
                     {
-                        // Look for .env file in the same directory as the .http file
-                        // (simplified: check current directory)
                         var envFile = System.IO.Path.Combine(Environment.CurrentDirectory, ".env");
                         if (System.IO.File.Exists(envFile))
                         {
