@@ -323,9 +323,33 @@ namespace OpenDevelop.HttpClient
                     }
                 }
 
-                // AWS Signature v4
+                // Cognito auth: Authorization: Cognito username password region userPoolId clientId
                 if (request.Headers.Authorization is not null &&
-                    request.Headers.Authorization.Scheme.Equals("AWS", StringComparison.OrdinalIgnoreCase))
+                    request.Headers.Authorization.Scheme.Equals("Cognito", StringComparison.OrdinalIgnoreCase))
+                {
+                    var param = request.Headers.Authorization.Parameter ?? "";
+                    var parts = param.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length >= 5)
+                    {
+                        var username = parts[0];
+                        var password = parts[1];
+                        var region = parts[2];
+                        var userPoolId = parts[3];
+                        var clientId = parts[4];
+
+                        request.Headers.Authorization = null;
+                        var token = await CognitoAuth.GetAccessTokenAsync(username, password, region, userPoolId, clientId);
+                        if (token is not null)
+                        {
+                            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                        }
+                        else
+                        {
+                            MessageService.ShowMessage("Cognito authentication failed.");
+                            return;
+                        }
+                    }
+                }
                 if (request.Headers.Authorization is not null &&
                     request.Headers.Authorization.Scheme.Equals("AWS", StringComparison.OrdinalIgnoreCase))
                 {
