@@ -43,8 +43,9 @@
 		          class = "OpenDevelop.HttpClient.SendRequestCommand"/>
 	</Path>
 
-	<!-- Code completion for .http and .rest files -->
-	<Path name = "/SharpDevelop/ViewContent/TextEditor/CodeCompletion">
-		<CodeCompletionBinding id = "Http-Completion" extensions = ".http;.rest" class = "OpenDevelop.HttpClient.HttpCodeCompletionBinding"/>
+	<!-- Text editor tool tips -->
+	<Path name = "/SharpDevelop/ViewContent/TextEditor/ToolTips">
+		<Class id = "HttpToolTipProvider"
+		       class = "OpenDevelop.HttpClient.HttpToolTipProvider"/>
 	</Path>
 </AddIn>
