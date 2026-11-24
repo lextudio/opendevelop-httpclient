@@ -1,0 +1,59 @@
+<Project>
+  <Sdk Name="Microsoft.NET.Sdk" />
+  <PropertyGroup>
+    <OpenDevelopAddin>true</OpenDevelopAddin>
+    <OpenDevelopAddinKind>InProcess</OpenDevelopAddinKind>
+    <TargetFramework>net11.0-windows</TargetFramework>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <RootNamespace>OpenDevelop.HttpClient</RootNamespace>
+    <AssemblyName>OpenDevelop.HttpClient</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+    <UseWPF>true</UseWPF>
+    <OutputPath>$(MSBuildProjectDirectory)/bin/odaddin/</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OpenDevelopAddinPackageName>HttpClient</OpenDevelopAddinPackageName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <OpenDevelopAddinManifest Include="../OpenDevelop.HttpClient/OpenDevelop.HttpClient.addin" />
+  </ItemGroup>
+
+  <Import Project="/Users/lextm/wpf-tools/OpenDevelop/OpenDevelop.app/Contents/MacOS/Sdks/OpenDevelop.Addin.Sdk/Sdk/Sdk.targets" />
+
+  <ItemGroup>
+    <Compile Include="../OpenDevelop.HttpClient/**/*.cs" Exclude="../OpenDevelop.HttpClient/obj/**;../OpenDevelop.HttpClient/bin/**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="../OpenDevelop.HttpClient/Resources/Http.xshd" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../OpenDevelop.HttpClient/OpenDevelop.HttpClient.addin" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="ICSharpCode.SharpDevelop">
+      <HintPath>$(OpenDevelopHostBin)ICSharpCode.SharpDevelop.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.Core">
+      <HintPath>$(OpenDevelopHostBin)ICSharpCode.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.Core.Presentation">
+      <HintPath>$(OpenDevelopHostBin)ICSharpCode.Core.Presentation.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.AvalonEdit">
+      <HintPath>$(OpenDevelopHostBin)ICSharpCode.AvalonEdit.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.LanguageServices.Contracts">
+      <HintPath>$(OpenDevelopHostBin)ICSharpCode.LanguageServices.Contracts.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="5.6.0" />
+  </ItemGroup>
+</Project>
