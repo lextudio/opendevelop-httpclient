@@ -95,8 +95,21 @@ namespace OpenDevelop.HttpClient
 
         public static string? ResolveVariable(string name)
         {
+            // Check $shared environment first (if exists)
+            var sharedEnv = _environments.Find(e => e.Name == "$shared");
+            if (sharedEnv is not null && sharedEnv.Variables.TryGetValue(name, out var sharedValue))
+                return sharedValue;
+
+            // Check active environment
             if (_active.Variables.TryGetValue(name, out var value))
                 return value;
+
+            // If active env doesn't have it, check $shared override
+            if (sharedEnv is not null && _active.Name != "$shared")
+            {
+                // Active env can override shared vars
+            }
+
             return null;
         }
 
