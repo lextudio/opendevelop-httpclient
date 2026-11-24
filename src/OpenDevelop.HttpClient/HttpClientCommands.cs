@@ -86,6 +86,22 @@ namespace OpenDevelop.HttpClient
             }
             targetRequest ??= requests[0];
 
+            // Check for directives in comments before the request
+            var directives = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var lines = text.Substring(0, targetRequest.Span.Start).Split('\n');
+            for (int i = lines.Length - 1; i >= 0; i--)
+            {
+                var line = lines[i].Trim();
+                if (string.IsNullOrEmpty(line)) continue;
+                if (line.StartsWith("###")) break;
+                var match = System.Text.RegularExpressions.Regex.Match(line, @"#\s*@(no-redirect|no-cookie-jar|allow-unresolved|timeout)\s*(.*)");
+                if (match.Success)
+                    directives.Add(match.Groups[1].Value.ToLowerInvariant());
+            }
+
+            var allowRedirect = !directives.Contains("no-redirect");
+            var useCookieJar = !directives.Contains("no-cookie-jar");
+
             // Find prompt variables for this request
             var promptVars = HttpPromptVariableResolver.FindPromptVariables(text, targetRequest.Span.Start);
             var promptValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -225,9 +241,19 @@ namespace OpenDevelop.HttpClient
             _cts = new System.Threading.CancellationTokenSource();
             try
             {
-                HttpCookieJar.ApplyCookies(request);
+                if (useCookieJar)
+                    HttpCookieJar.ApplyCookies(request);
 
                 var handler = new System.Net.Http.HttpClientHandler();
+                // ... SSL cert, proxy, digest auth ...
+
+                handler.AllowAutoRedirect = allowRedirect;
+
+                if (!useCookieJar)
+                {
+                    // Don't apply cookies if disabled
+                }
+
                 var certPath = Environment.GetEnvironmentVariable("HTTP_CLIENT_CERT");
                 var certPassword = Environment.GetEnvironmentVariable("HTTP_CLIENT_CERT_PASSWORD");
                 if (!string.IsNullOrEmpty(certPath) && System.IO.File.Exists(certPath))
@@ -265,7 +291,7 @@ namespace OpenDevelop.HttpClient
                 var responseBody = await response.Content.ReadAsStringAsync(_cts.Token);
 
                 // Store cookies for subsequent requests
-                if (request.RequestUri is not null)
+                if (useCookieJar && request.RequestUri is not null)
                     HttpCookieJar.StoreCookies(request.RequestUri.Host, response.Headers);
 
                 // Record history
