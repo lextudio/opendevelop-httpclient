@@ -152,6 +152,44 @@ namespace OpenDevelop.HttpClient
                 return;
             }
 
+            // Handle file body references: "< ./file.json" or "<@ ./file.json"
+            if (request.Content is System.Net.Http.StringContent sc)
+            {
+                var bodyText = await sc.ReadAsStringAsync();
+                var trimmed = bodyText.TrimStart();
+                if (trimmed.StartsWith("<"))
+                {
+                    var bodyFilePath = trimmed.TrimStart('<', '@').Trim();
+                    // Remove encoding specifier if present (e.g., "<@latin1 ./file.json")
+                    // Simple: just take the last token as file path
+                    var parts = bodyFilePath.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    var actualPath = parts.Length > 1 ? parts[parts.Length - 1] : parts[0];
+                    // Resolve relative to the .http file's directory
+                    var httpFileDir = "";
+                    var editorFile = editor.FileName?.ToString();
+                    if (!string.IsNullOrEmpty(editorFile))
+                        httpFileDir = System.IO.Path.GetDirectoryName(editorFile) ?? "";
+
+                    var fullPath = System.IO.Path.IsPathRooted(actualPath)
+                        ? actualPath
+                        : System.IO.Path.Combine(httpFileDir, actualPath);
+
+                    if (System.IO.File.Exists(fullPath))
+                    {
+                        var fileContent = await System.IO.File.ReadAllTextAsync(fullPath);
+                        request.Content = new System.Net.Http.StringContent(fileContent);
+                        // Copy content type if set
+                        if (sc.Headers.ContentType is not null)
+                            request.Content.Headers.ContentType = sc.Headers.ContentType;
+                    }
+                    else
+                    {
+                        MessageService.ShowMessage($"File not found: {fullPath}");
+                        return;
+                    }
+                }
+            }
+
             // Basic auth auto-encoding: "Basic user:pass" or "Basic user pass" -> base64
             if (request.Headers.Authorization is not null &&
                 request.Headers.Authorization.Scheme.Equals("Basic", StringComparison.OrdinalIgnoreCase))
