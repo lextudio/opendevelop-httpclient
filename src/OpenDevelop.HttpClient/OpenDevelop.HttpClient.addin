@@ -34,6 +34,8 @@
 	<Path name = "/SharpDevelop/Autostart">
 		<Class id    = "HttpClientRegisterServices"
 		       class = "OpenDevelop.HttpClient.RegisterServicesCommand"/>
+		<Class id    = "HttpClientRegisterLanguageService"
+		       class = "OpenDevelop.HttpClient.RegisterHttpLanguageServiceCommand"/>
 	</Path>
 
 	<!-- Main menu: HTTP commands -->
