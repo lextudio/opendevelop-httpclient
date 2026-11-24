@@ -24,8 +24,16 @@ namespace OpenDevelop.HttpClient
 
     public sealed class SendRequestCommand : AbstractMenuCommand
     {
+        private static System.Threading.CancellationTokenSource? _cts;
+
         public override void Run()
         {
+            if (_cts is not null && !_cts.IsCancellationRequested)
+            {
+                _cts.Cancel();
+                _cts = null;
+                return;
+            }
             _ = SendRequestAsync();
         }
 
@@ -139,11 +147,12 @@ namespace OpenDevelop.HttpClient
             var namedRequestNode = targetRequest.TryGetCommentNamedRequestNode();
             var requestName = namedRequestNode?.ValueNode?.Text?.Trim();
 
+            _cts = new System.Threading.CancellationTokenSource();
             try
             {
                 using var client = new System.Net.Http.HttpClient();
-                var response = await client.SendAsync(request);
-                var responseBody = await response.Content.ReadAsStringAsync();
+                var response = await client.SendAsync(request, _cts.Token);
+                var responseBody = await response.Content.ReadAsStringAsync(_cts.Token);
                 var responseText = new StringBuilder();
                 responseText.AppendLine($"HTTP/{response.Version} {(int)response.StatusCode} {response.ReasonPhrase}");
                 responseText.AppendLine();
@@ -178,9 +187,18 @@ namespace OpenDevelop.HttpClient
                 var content = Encoding.UTF8.GetBytes(responseText.ToString());
                 SD.FileService.NewFile("Response" + ext, content);
             }
+            catch (OperationCanceledException)
+            {
+                MessageService.ShowMessage("Request cancelled.");
+            }
             catch (Exception ex)
             {
                 MessageService.ShowMessage("Request failed: " + ex.Message);
+            }
+            finally
+            {
+                _cts?.Dispose();
+                _cts = null;
             }
         }
 
