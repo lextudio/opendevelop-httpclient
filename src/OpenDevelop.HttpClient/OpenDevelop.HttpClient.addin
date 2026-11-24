@@ -49,6 +49,9 @@
 		<MenuItem id    = "ClearHttpHistory"
 		          label = "Clear HTTP Request History"
 		          class = "OpenDevelop.HttpClient.ClearHistoryCommand"/>
+		<MenuItem id    = "SwitchHttpEnvironment"
+		          label = "Switch HTTP Environment"
+		          class = "OpenDevelop.HttpClient.SwitchEnvironmentCommand"/>
 	</Path>
 
 	<!-- Text editor tool tips -->
