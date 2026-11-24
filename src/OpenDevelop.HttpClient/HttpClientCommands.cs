@@ -150,9 +150,14 @@ namespace OpenDevelop.HttpClient
             _cts = new System.Threading.CancellationTokenSource();
             try
             {
+                HttpCookieJar.ApplyCookies(request);
                 using var client = new System.Net.Http.HttpClient();
                 var response = await client.SendAsync(request, _cts.Token);
                 var responseBody = await response.Content.ReadAsStringAsync(_cts.Token);
+
+                // Store cookies for subsequent requests
+                if (request.RequestUri is not null)
+                    HttpCookieJar.StoreCookies(request.RequestUri.Host, response.Headers);
                 var responseText = new StringBuilder();
                 responseText.AppendLine($"HTTP/{response.Version} {(int)response.StatusCode} {response.ReasonPhrase}");
                 responseText.AppendLine();
