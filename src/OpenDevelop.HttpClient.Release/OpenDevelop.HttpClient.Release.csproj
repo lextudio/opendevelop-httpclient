@@ -21,7 +21,7 @@
     <OpenDevelopAddinManifest Include="../OpenDevelop.HttpClient/OpenDevelop.HttpClient.addin" />
   </ItemGroup>
 
-  <Import Project="/Users/lextm/wpf-tools/OpenDevelop/OpenDevelop.app/Contents/MacOS/Sdks/OpenDevelop.Addin.Sdk/Sdk/Sdk.targets" />
+  <Import Project="$(OpenDevelopHostBin)../Sdks/OpenDevelop.Addin.Sdk/Sdk/Sdk.targets" />
 
   <ItemGroup>
     <Compile Include="../OpenDevelop.HttpClient/**/*.cs" Exclude="../OpenDevelop.HttpClient/obj/**;../OpenDevelop.HttpClient/bin/**" />
