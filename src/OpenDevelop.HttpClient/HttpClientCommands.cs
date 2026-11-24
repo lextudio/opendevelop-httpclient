@@ -323,7 +323,32 @@ namespace OpenDevelop.HttpClient
                     }
                 }
 
-                // Cognito auth: Authorization: Cognito username password region userPoolId clientId
+                // OAuth2 client credentials: Authorization: OAuth2 tokenUrl clientId clientSecret [scope]
+                if (request.Headers.Authorization is not null &&
+                    request.Headers.Authorization.Scheme.Equals("OAuth2", StringComparison.OrdinalIgnoreCase))
+                {
+                    var param = request.Headers.Authorization.Parameter ?? "";
+                    var parts = param.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length >= 3)
+                    {
+                        var tokenUrl = parts[0];
+                        var clientId = parts[1];
+                        var clientSecret = parts[2];
+                        var scope = parts.Length >= 4 ? parts[3] : "";
+
+                        request.Headers.Authorization = null;
+                        var token = await OAuth2ClientCredentials.GetAccessTokenAsync(tokenUrl, clientId, clientSecret, scope);
+                        if (token is not null)
+                        {
+                            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                        }
+                        else
+                        {
+                            MessageService.ShowMessage("OAuth2 authentication failed.");
+                            return;
+                        }
+                    }
+                }
                 if (request.Headers.Authorization is not null &&
                     request.Headers.Authorization.Scheme.Equals("Cognito", StringComparison.OrdinalIgnoreCase))
                 {
