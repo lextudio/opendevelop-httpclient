@@ -13,7 +13,6 @@
 		<Import assembly = "OpenDevelop.HttpClient.dll"/>
 	</Runtime>
 
-	<!-- Syntax highlighting for .http and .rest files -->
 	<Path name = "/SharpDevelop/ViewContent/AvalonEdit/SyntaxModes">
 		<SyntaxMode id         = "HTTP Syntax Mode"
 		            name       = "HTTP"
@@ -21,7 +20,6 @@
 		            resource   = "OpenDevelop.HttpClient.Resources.Http.xshd" />
 	</Path>
 
-	<!-- File filter for Open dialog -->
 	<Path name = "/SharpDevelop/Workbench/FileFilter">
 		<FileFilter id = "Http"
 		            insertbefore="AllFiles"
@@ -30,7 +28,6 @@
 		            mimeType = "text/plain"/>
 	</Path>
 
-	<!-- Autostart: register language service and commands -->
 	<Path name = "/SharpDevelop/Autostart">
 		<Class id    = "HttpClientRegisterServices"
 		       class = "OpenDevelop.HttpClient.RegisterServicesCommand"/>
@@ -38,7 +35,6 @@
 		       class = "OpenDevelop.HttpClient.RegisterHttpLanguageServiceCommand"/>
 	</Path>
 
-	<!-- Main menu: HTTP commands -->
 	<Path name = "/SharpDevelop/Workbench/MainMenu/Tools">
 		<MenuItem id    = "SendHttpRequest"
 		          label = "Send HTTP Request"
@@ -46,9 +42,6 @@
 		<MenuItem id    = "ViewHttpHistory"
 		          label = "View HTTP Request History"
 		          class = "OpenDevelop.HttpClient.ViewHistoryCommand"/>
-		<MenuItem id    = "ShowHttpHistoryPad"
-		          label = "Show HTTP History Window"
-		          class = "OpenDevelop.HttpClient.ShowHistoryPadCommand"/>
 		<MenuItem id    = "ClearHttpHistory"
 		          label = "Clear HTTP Request History"
 		          class = "OpenDevelop.HttpClient.ClearHistoryCommand"/>
@@ -61,15 +54,6 @@
 		<MenuItem id    = "SaveHttpResponseBodyOnly"
 		          label = "Save HTTP Response Body Only"
 		          class = "OpenDevelop.HttpClient.SaveResponseBodyOnlyCommand"/>
-		<MenuItem id    = "FormatHttpBody"
-		          label = "Format HTTP Request Body"
-		          class = "OpenDevelop.HttpClient.FormatRequestBodyCommand"/>
-		<MenuItem id    = "IndentHttpBody"
-		          label = "Indent HTTP Request Body"
-		          class = "OpenDevelop.HttpClient.IndentRequestBodyCommand"/>
-		<MenuItem id    = "PreviewHttpResponse"
-		          label = "Preview HTTP Response"
-		          class = "OpenDevelop.HttpClient.PreviewResponseCommand"/>
 		<MenuItem id    = "ShowHttpResponseRich"
 		          label = "Show HTTP Response (Rich View)"
 		          class = "OpenDevelop.HttpClient.ShowResponseRichCommand"/>
@@ -79,15 +63,42 @@
 		<MenuItem id    = "ViewImageResponse"
 		          label = "View Image Response"
 		          class = "OpenDevelop.HttpClient.ViewImageResponseCommand"/>
+		<MenuItem id    = "ShowHttpHistoryPad"
+		          label = "Show HTTP History Window"
+		          class = "OpenDevelop.HttpClient.ShowHistoryPadCommand"/>
 		<MenuItem id    = "OidcLogin"
 		          label = "OIDC Device Code Login"
 		          class = "OpenDevelop.HttpClient.OidcLoginCommand"/>
 		<MenuItem id    = "OidcAuthCodeLogin"
 		          label = "OIDC Browser Login"
 		          class = "OpenDevelop.HttpClient.OidcAuthCodeLoginCommand"/>
+		<MenuItem id    = "GenerateCodeSnippetUI"
+		          label = "Generate Code Snippet (UI)"
+		          class = "OpenDevelop.HttpClient.GenerateCodeSnippetUICommand"/>
+		<MenuItem id    = "GenerateCodeSnippetFull"
+		          label = "Generate Code Snippet (Full)"
+		          class = "OpenDevelop.HttpClient.GenerateCodeSnippetFullCommand"/>
+		<MenuItem id    = "FormatHttpBody"
+		          label = "Format HTTP Request Body"
+		          class = "OpenDevelop.HttpClient.FormatRequestBodyCommand"/>
+		<MenuItem id    = "IndentHttpBody"
+		          label = "Indent HTTP Request Body"
+		          class = "OpenDevelop.HttpClient.IndentRequestBodyCommand"/>
+		<MenuItem id    = "PreviewHttpResponse"
+		          label = "Preview HTTP Response"
+		          class = "OpenDevelop.HttpClient.PreviewResponseCommand"/>
 	</Path>
 
-	<!-- Text editor tool tips -->
+	<Path name = "/SharpDevelop/ViewContent/TextEditor/ContextMenu">
+		<MenuItem id    = "SendHttpRequest"
+		          label = "Send Request"
+		          class = "OpenDevelop.HttpClient.SendRequestCommand"/>
+	</Path>
+
+	<Path name = "/SharpDevelop/ViewContent/TextEditor/CodeCompletion">
+		<CodeCompletionBinding id = "Http-Completion" extensions = ".http;.rest" class = "OpenDevelop.HttpClient.HttpCodeCompletionBinding"/>
+	</Path>
+
 	<Path name = "/SharpDevelop/ViewContent/TextEditor/ToolTips">
 		<Class id = "HttpToolTipProvider"
 		       class = "OpenDevelop.HttpClient.HttpToolTipProvider"/>
