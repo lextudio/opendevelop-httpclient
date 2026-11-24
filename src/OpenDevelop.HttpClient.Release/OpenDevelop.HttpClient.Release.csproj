@@ -37,6 +37,12 @@
     <Reference Include="ICSharpCode.Core.Presentation">
       <HintPath>$(OpenDevelopHostBin)ICSharpCode.Core.Presentation.dll</HintPath>
     </Reference>
+    <Reference Include="ICSharpCode.AvalonEdit">
+      <HintPath>$(OpenDevelopHostBin)ICSharpCode.AvalonEdit.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.LanguageServices.Contracts">
+      <HintPath>$(OpenDevelopHostBin)ICSharpCode.LanguageServices.Contracts.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
