@@ -2,7 +2,7 @@ using OpenDevelop.IntegrationTests;
 using System.Text.Json;
 using Xunit;
 
-namespace OpenDevelop.HttpClient.IntegrationTests;
+namespace OpenDevelopHttpClient.IntegrationTests;
 
 [Collection(OpenDevelopInstalledAppCollection.Name)]
 public sealed class HttpClientInstalledAppTests

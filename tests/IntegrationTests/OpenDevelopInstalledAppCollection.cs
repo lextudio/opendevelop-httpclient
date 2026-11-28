@@ -1,7 +1,7 @@
 using OpenDevelop.IntegrationTests;
 using Xunit;
 
-namespace OpenDevelop.HttpClient.IntegrationTests;
+namespace OpenDevelopHttpClient.IntegrationTests;
 
 public sealed class OpenDevelopInstalledAppCollection : ICollectionFixture<OpenDevelopAppFixture>
 {
